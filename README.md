@@ -6,3 +6,9 @@ Group Members:
 - Nicolas Ferradas Bertoli
 - Alexa Fisher
 - Arun Bhaskar
+
+
+Class Diagram (Draft, still needs the storage structure)
+
+![alt text](image.png)
+

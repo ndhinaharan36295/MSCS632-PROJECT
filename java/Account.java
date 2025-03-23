@@ -27,24 +27,71 @@ public class Account {
         this.credits.add(income);
     }
 
-    // todo
     public List<MoneyMovement> filterByCategory(String category){
-        return null;
+        // final List containing all the filtered expenses and incomes (both represented as MoneyMovement objects)
+        // that match the given category
+        List<MoneyMovement> filteredMoneyMovements = new ArrayList<>();
+
+        // Iterating over all the expenses and add the ones that match the category to the filteredMoneyMovements list
+        for (Expense expense : expenses) {
+            if (expense.getCategory().equals(category)) {
+                filteredMoneyMovements.add(expense);
+            }
+        }
+
+        // Iterating over all the incomes and add the ones that match the category to the filteredMoneyMovements list
+        for (Income income : credits) {
+            if (income.getCategory().equals(category)) {
+                filteredMoneyMovements.add(income);
+            }
+        }
+
+        return filteredMoneyMovements;
     }
 
-    // todo
     public List<MoneyMovement> filterByDateRange(Date startDate, Date endDate){
-        return null;
+        // final List containing all the filtered expenses and incomes that match the given date range (>= startDate and <= endDate)
+        List<MoneyMovement> filteredMoneyMovements = new ArrayList<>();
+
+        // Iterating over all the expenses and add the ones that match the date range to the filteredMoneyMovements list
+        for (Expense expense : expenses) {
+            if (!expense.getDate().before(startDate) && !expense.getDate().after(endDate)) {
+                filteredMoneyMovements.add(expense);
+            }
+        }
+
+        // Iterating over all the incomes and add the ones that match the date range to the filteredMoneyMovements list
+        for (Income income : credits) {
+            if (!income.getDate().before(startDate) && !income.getDate().after(endDate)) {
+                filteredMoneyMovements.add(income);
+            }
+        }
+        return filteredMoneyMovements;
     }
 
-    // todo
-    public List<MoneyMovement> filterByAmount(double min, double max){
-        return null;
+    public List<MoneyMovement> filterByAmount(double minAmount, double maxAmount){
+        // final List containing all the filtered expenses and incomes that match the given amount (>= minAmount and <= maxAmount)
+        List<MoneyMovement> filteredMoneyMovements = new ArrayList<>();
+
+        // Iterating over all the expenses and add the ones that match the amount range to the filteredMoneyMovements list
+        for (Expense expense : expenses) {
+            if (expense.getAmount() >= minAmount && expense.getAmount() <= maxAmount) {
+                filteredMoneyMovements.add(expense);
+            }
+        }
+
+        // Iterating over all the incomes and add the ones that match the amount range to the filteredMoneyMovements list
+        for (Income income : credits) {
+            if (income.getAmount() >= minAmount && income.getAmount() <= maxAmount) {
+                filteredMoneyMovements.add(income);
+            }
+        }
+        return filteredMoneyMovements;
     }
 
-    // todo
     public List<Expense> getAllExpenses(){
-        return null;
+        // returning a new ArrayList containing all the expenses
+        return new ArrayList<>(expenses);
     }
 
     // todo

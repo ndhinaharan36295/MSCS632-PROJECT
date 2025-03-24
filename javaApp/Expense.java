@@ -26,7 +26,7 @@ public class Expense extends MoneyMovement{
 
     @Override
     public String showMovement() {
-        return "Amount: " + amount + " | Description: " + description + " | Category: " + category + " | Date: " + date + " | StoreName: " + storeName;
+        return "Amount: -" + amount + " | Description: " + description + " | Category: " + category + " | Date: " + date + " | StoreName: " + storeName;
     }
 
 }

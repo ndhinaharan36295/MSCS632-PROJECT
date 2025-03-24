@@ -112,6 +112,7 @@ public class ExpenseTracker {
         double min = scanner.nextDouble();
         System.out.println("Max Price: ");
         double max = scanner.nextDouble();
+        scanner.nextLine();
 
         List<MoneyMovement> transacitons = userAccount.filterByAmount(min, max);
 

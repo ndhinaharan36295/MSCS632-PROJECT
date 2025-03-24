@@ -1,16 +1,47 @@
-package java;
+package javaApp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class Account {
 
-    public List<Expense> expenses;
-    public List<Income> credits;
+    private String name;
+    private double totalBalance;
+    private List<Expense> expenses;
+    private List<Income> credits;
 
     public Account(){
+        initializeTotalBalance();
         this.expenses = new ArrayList<>();
         this.credits = new ArrayList<>();
+    }
+
+    public void setName(String name){
+        // set the user name
+        this.name = name;
+    }
+
+    public String getName(){
+        // get the user name
+        return this.name;
+    }
+
+    public double getTotalBalance(){
+        // return the current total balance (should be the total of credits - expenses)
+        return this.totalBalance;
+    }
+    
+    protected void initializeTotalBalance(){
+        // method to set the total balance, to be used initially only
+        this.totalBalance = 0;
+    }
+
+    public void addToTotalBalance(double incomeAmonut){
+        this.totalBalance += incomeAmonut;
+    }
+
+    public void substractFromTotalBalance(double expenseAmount){
+        this.totalBalance -= expenseAmount;
     }
 
     public void logExpense(Expense expense){
@@ -18,6 +49,7 @@ public class Account {
             this.expenses = new ArrayList<>();
         }
         this.expenses.add(expense);
+        substractFromTotalBalance(expense.getAmount());
     }
 
     public void logIncome(Income income){
@@ -25,6 +57,7 @@ public class Account {
             this.credits = new ArrayList<>();
         }
         this.credits.add(income);
+        addToTotalBalance(income.getAmount());
     }
 
     public List<MoneyMovement> filterByCategory(String category){
@@ -91,17 +124,22 @@ public class Account {
 
     public List<Expense> getAllExpenses(){
         // returning a new ArrayList containing all the expenses
-        return new ArrayList<>(expenses);
+        return expenses;
     }
 
-    // todo
+
     public List<Income> getAllIncome(){
-        return null;
+        // retrun the credits array list
+        return credits;
     }
 
     // todo
     public List<MoneyMovement> getAllMoneyMovements(){
-        return null;
+        // method to return all transactions
+        List<MoneyMovement> allTransactions = new ArrayList<>();
+        allTransactions.addAll(this.expenses);
+        allTransactions.addAll(this.credits);
+        return allTransactions;
     }
 
 

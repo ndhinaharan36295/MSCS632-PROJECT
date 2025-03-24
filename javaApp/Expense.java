@@ -1,4 +1,4 @@
-package java;
+package javaApp;
 import java.util.Date;
 
 public class Expense extends MoneyMovement{
@@ -26,7 +26,7 @@ public class Expense extends MoneyMovement{
 
     @Override
     public String showMovement() {
-        return null;
+        return "Amount: " + amount + " | Description: " + description + " | Category: " + category + " | Date: " + date + " | StoreName: " + storeName;
     }
 
 }

@@ -140,6 +140,7 @@ public class ExpenseTracker {
         System.out.println("Income Amount: ");
         double amount = scanner.nextDouble();
         income.setAmount(amount);
+        scanner.nextLine();
 
         System.out.println("Source name: ");
         String source = scanner.nextLine();
@@ -171,6 +172,7 @@ public class ExpenseTracker {
         System.out.println("Expense Amount: ");
         double amount = scanner.nextDouble();
         expense.setAmount(amount);
+        scanner.nextLine();
 
         System.out.println("Store name: ");
         String storeName = scanner.nextLine();
@@ -188,7 +190,7 @@ public class ExpenseTracker {
         String date = scanner.nextLine();
         expense.setDate(convertToDateFormat(date));
 
-        System.out.println("INCOME SAVED SUCCESSFULLY");
+        System.out.println("EXPENSE SAVED SUCCESSFULLY");
         System.out.println("======================================================");
 
         return expense;

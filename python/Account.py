@@ -1,194 +1,104 @@
 import datetime
+from typing import List, Dict, Union, Optional
+from collections import defaultdict
+import threading
 
+Transaction = Dict[str, Union[str, datetime.date, float]]
 
 class Account:
+    def __init__(self) -> None:
+        self.transactions: List[Transaction] = []
+        self.transactions_by_type = defaultdict(list)  # Caches transactions by type
+        self.lock = threading.Lock()  # Ensures thread-safe operations
 
-    def __init__(self):
-        """Initialize account with a list of transactions"""
-        self.transactions = []
-
-    #  Log Expense
-    def logExpense(self, date, amount, category, description=""):
-        """Log an expense"""
+    def _parse_date(self, date_str: str) -> Optional[datetime.date]:
         try:
-            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-            self.transactions.append(
-                {
-                    "date": date,
-                    "type": "expense",
-                    "amount": amount,
-                    "category": category,
-                    "description": description
-                })
-            return True
+            return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             print("Error: Incorrect date format. Use YYYY-MM-DD.")
+            return None
+
+    def _log_transaction(self, date: str, amount: float, category: str, description: str, t_type: str) -> bool:
+        parsed_date = self._parse_date(date)
+        if parsed_date is None:
             return False
 
-    #  Log Income
-    def logIncome(self, date, amount, category, description=""):
-        """Log an income"""
-        try:
-            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-            self.transactions.append(
-                {
-                    "date": date,
-                    "type": "income",
-                    "amount": amount,
-                    "category": category,
-                    "description": description
-                })
-            return True
-        except ValueError:
-            print("Error: Incorrect date format. Use YYYY-MM-DD.")
-            return False
+        transaction = {
+            "date": parsed_date,
+            "type": t_type,
+            "amount": amount,
+            "category": category,
+            "description": description
+        }
 
-    #  Delete Expense by date, amount, and description
-    def deleteExpense(self, date, amount, description):
-        """Delete an expense by date, amount, and description"""
-        try:
-            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        with self.lock:
+            self.transactions.append(transaction)
+            self.transactions_by_type[t_type].append(transaction)
 
-            for transaction in self.transactions:
-                if (
-                        transaction["type"] == "expense" and
-                        transaction["date"] == date and
-                        transaction["amount"] == amount and
-                        transaction["description"].lower() == description.lower()
-                ):
-                    self.transactions.remove(transaction)
-                    print(f" Expense deleted: {transaction}")
-                    return
-            print(" No matching expense found.")
-        except ValueError:
-            print("Invalid date format. Use YYYY-MM-DD.")
-        except Exception as e:
-            print(f"Error deleting expense: {e}")
+        return True
 
-    #  Delete Income by date, amount, and description
-    def deleteIncome(self, date, amount, description):
-        """Delete an income by date, amount, and description"""
-        try:
-            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+    def logExpense(self, date: str, amount: float, category: str, description: str = "") -> bool:
+        return self._log_transaction(date, amount, category, description, "expense")
 
-            for transaction in self.transactions:
-                if (
-                        transaction["type"] == "income" and
-                        transaction["date"] == date and
-                        transaction["amount"] == amount and
-                        transaction["description"].lower() == description.lower()
-                ):
-                    self.transactions.remove(transaction)
-                    print(f" Income deleted: {transaction}")
-                    return
-            print(" No matching income found.")
-        except ValueError:
-            print("Invalid date format. Use YYYY-MM-DD.")
-        except Exception as e:
-            print(f"Error deleting income: {e}")
+    def logIncome(self, date: str, amount: float, category: str, description: str = "") -> bool:
+        return self._log_transaction(date, amount, category, description, "income")
 
-    #  Show All Expenses
-    def getAllExpenses(self):
-        """Display all expenses"""
-        expenses = [t for t in self.transactions if t["type"] == "expense"]
-
-        if not expenses:
-            print("\nNo expenses recorded.")
+    def _delete_transaction(self, date: str, amount: float, description: str, t_type: str) -> None:
+        parsed_date = self._parse_date(date)
+        if parsed_date is None:
             return
 
-        print("\n All Expenses:")
-        for expense in expenses:
-            print(f"Date: {expense['date']}, "
-                  f"Amount: ${expense['amount']:.2f}, "
-                  f"Category: {expense['category']}, "
-                  f"Description: {expense['description']}")
+        with self.lock:
+            to_remove = next((t for t in self.transactions_by_type[t_type]
+                              if t["date"] == parsed_date and
+                              t["amount"] == amount and
+                              t["description"].lower() == description.lower()), None)
+            if to_remove:
+                self.transactions.remove(to_remove)
+                self.transactions_by_type[t_type].remove(to_remove)
+                print(f"{t_type.capitalize()} deleted: {to_remove}")
+            else:
+                print(f"No matching {t_type} found.")
 
-    #  Show All Income
-    def getAllIncome(self):
-        """Display all income"""
-        income = [t for t in self.transactions if t["type"] == "income"]
+    def deleteExpense(self, date: str, amount: float, description: str) -> None:
+        self._delete_transaction(date, amount, description, "expense")
 
-        if not income:
-            print("\nNo income recorded.")
+    def deleteIncome(self, date: str, amount: float, description: str) -> None:
+        self._delete_transaction(date, amount, description, "income")
+
+    def _display_transactions(self, transactions: List[Transaction], header: str) -> None:
+        if not transactions:
+            print(f"\nNo {header.lower()} recorded.")
             return
+        print(f"\n{header}:")
+        for t in transactions:
+            print(f"Date: {t['date']}, Amount: ${t['amount']:.2f}, Category: {t['category']}, Description: {t['description']}")
 
-        print("\n All Income:")
-        for inc in income:
-            print(f"Date: {inc['date']}, "
-                  f"Amount: ${inc['amount']:.2f}, "
-                  f"Category: {inc['category']}, "
-                  f"Description: {inc['description']}")
+    def getAllExpenses(self) -> None:
+        self._display_transactions(self.transactions_by_type["expense"], "All Expenses")
 
-    #  Show Money Movements
-    def getAllMoneyMovements(self):
-        """Display all income and expense movements"""
-        if not self.transactions:
-            print("\nNo transactions recorded.")
-            return
+    def getAllIncome(self) -> None:
+        self._display_transactions(self.transactions_by_type["income"], "All Income")
 
-        print("\n Money Movements (Income and Expenses):")
-        for transaction in self.transactions:
-            print(f"Date: {transaction['date']}, "
-                  f"Type: {transaction['type'].capitalize()}, "
-                  f"Amount: ${transaction['amount']:.2f}, "
-                  f"Category: {transaction['category']}, "
-                  f"Description: {transaction['description']}")
+    def getAllMoneyMovements(self) -> None:
+        self._display_transactions(self.transactions, "Money Movements (Income and Expenses)")
 
-    #  Filter by Category
-    def filterByCategory(self, category):
-        """Filter transactions by category"""
-        filtered = [t for t in self.transactions if t["category"].lower() == category.lower()]
+    def filterByCategory(self, category: str) -> List[Transaction]:
+        result = [t for t in self.transactions if t["category"].lower() == category.lower()]
+        self._display_transactions(result, f"Transactions in Category: {category}")
+        return result
 
-        if not filtered:
-            print(f"\n No transactions found for category: {category}")
+    def filterByDateRange(self, start_date: str, end_date: str) -> List[Transaction]:
+        start = self._parse_date(start_date)
+        end = self._parse_date(end_date)
+        if not start or not end:
             return []
 
-        print(f"\n Transactions in Category: {category}")
-        for t in filtered:
-            print(f"Date: {t['date']}, Amount: ${t['amount']:.2f}, Type: {t['type']}, Description: {t['description']}")
+        result = [t for t in self.transactions if start <= t["date"] <= end]
+        self._display_transactions(result, f"Transactions from {start} to {end}")
+        return result
 
-        return filtered
-
-    #  Filter by Date Range
-    def filterByDateRange(self, start_date, end_date):
-        """Filter transactions by date range"""
-        try:
-            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-
-            filtered = [
-                t for t in self.transactions
-                if start_date <= t["date"] <= end_date
-            ]
-
-            if not filtered:
-                print("\n No transactions found in the given date range.")
-                return []
-
-            print(f"\n Transactions from {start_date} to {end_date}:")
-            for t in filtered:
-                print(f"Date: {t['date']}, Amount: ${t['amount']:.2f}, Type: {t['type']}, Category: {t['category']}, Description: {t['description']}")
-
-            return filtered
-
-        except ValueError:
-            print("Error: Invalid date format. Use YYYY-MM-DD.")
-            return []
-
-    #  Filter by Amount Range
-    def filterByAmount(self, min_amount, max_amount):
-        """Filter transactions by amount range"""
-        filtered = [
-            t for t in self.transactions
-            if min_amount <= t["amount"] <= max_amount
-        ]
-
-        if not filtered:
-            print(f"\n No transactions found in amount range: ${min_amount:.2f} - ${max_amount:.2f}")
-            return []
-
-        print(f"\n Transactions in Amount Range: ${min_amount:.2f} - ${max_amount:.2f}")
-        for t in filtered:
-            print(f"Date: {t['date']}, Amount: ${t['amount']:.2f}, Type: {t['type']}, Category: {t['category']}, Description: {t['description']}")
-
-        return filtered
+    def filterByAmount(self, min_amount: float, max_amount: float) -> List[Transaction]:
+        result = [t for t in self.transactions if min_amount <= t["amount"] <= max_amount]
+        self._display_transactions(result, f"Transactions in Amount Range: ${min_amount:.2f} - ${max_amount:.2f}")
+        return result

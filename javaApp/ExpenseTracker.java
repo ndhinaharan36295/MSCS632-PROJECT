@@ -10,7 +10,8 @@ public class ExpenseTracker {
 
     private static Set<String> validMenuSet = Set.of("A", "B", "C", "D", "E", "F", "G", "H", "I");
     public static void main(String[] args) {
-        System.out.println("Hello, Welcome to your expense Tracker!");
+        System.out.println("================================MSCS 632 EXPENSE TRACKER 2.0=======================================");
+        System.out.println("============================Hello, Welcome to your expense Tracker!================================");
         Scanner scanner = new Scanner(System.in);
 
         Account userAccount = new Account();
@@ -18,7 +19,7 @@ public class ExpenseTracker {
         while(true){
             String option = "";
             printMenu();
-            System.out.println("Select action: ");
+            System.out.println("What can I help you with today?: ");
             option = scanner.nextLine();
 
             if(!validMenuSet.contains(option)){
@@ -26,7 +27,7 @@ public class ExpenseTracker {
                 continue;
             }
 
-            //Kscanner.close();
+            //scanner.close();
 
             switch (option) {
                 case "A":
@@ -38,21 +39,30 @@ public class ExpenseTracker {
                     userAccount.logIncome(income);
                     break;
                 case "C":
-                    searchByCategory(userAccount, scanner);
+                    searchByCategory(userAccount, scanner, MovementTypeEnum.EXPENSE);
                     break;
                 case "D":
-                    searchByPriceRange(userAccount, scanner);
+                    searchByCategory(userAccount, scanner, MovementTypeEnum.INCOME);
                     break;
                 case "E":
-                    searchByDateRange(userAccount, scanner);
+                    searchByPriceRange(userAccount, scanner, MovementTypeEnum.EXPENSE);
                     break;
                 case "F":
-                    showAllExpenses(userAccount);
+                    searchByPriceRange(userAccount, scanner, MovementTypeEnum.INCOME);
                     break;
                 case "G":
-                    showAllIncome(userAccount);
+                    searchByDateRange(userAccount, scanner, MovementTypeEnum.EXPENSE);
                     break;
                 case "H":
+                    searchByDateRange(userAccount, scanner, MovementTypeEnum.INCOME);
+                    break;
+                case "I":
+                    showAllExpenses(userAccount);
+                    break;
+                case "J":
+                    showAllIncome(userAccount);
+                    break;
+                case "K":
                     showTotalBalance(userAccount);
                     break;
                 default:
@@ -91,22 +101,24 @@ public class ExpenseTracker {
         }
     }
 
-    public static void searchByDateRange(Account userAccount, Scanner scanner){
+    public static void searchByDateRange(Account userAccount, Scanner scanner, MovementTypeEnum type){
 
         System.out.println("Start Date: ");
         String start = scanner.nextLine();
         System.out.println("End Date: ");
         String end = scanner.nextLine();
 
-        List<MoneyMovement> transacitons = userAccount.filterByDateRange(convertToDateFormat(start), convertToDateFormat(end));
-
-        for(MoneyMovement transaciton : transacitons){
-            System.out.println(transaciton.showMovement());
+        if(MovementTypeEnum.EXPENSE.equals(type)){
+            List<Expense> movements = userAccount.filterExpenseByDateRange(convertToDateFormat(start), convertToDateFormat(end));
+            printExpenses(movements);
+        } else if (MovementTypeEnum.INCOME.equals(type)){
+            List<Income> movements = userAccount.filterIncomeByDateRange(convertToDateFormat(start), convertToDateFormat(end));
+            printIncome(movements);
         }
 
     }
 
-    public static void searchByPriceRange(Account userAccount, Scanner scanner){
+    public static void searchByPriceRange(Account userAccount, Scanner scanner, MovementTypeEnum type){
 
         System.out.println("Min Price: ");
         double min = scanner.nextDouble();
@@ -114,19 +126,21 @@ public class ExpenseTracker {
         double max = scanner.nextDouble();
         scanner.nextLine();
 
-        List<MoneyMovement> transacitons = userAccount.filterByAmount(min, max);
-
-        for(MoneyMovement transaciton : transacitons){
-            System.out.println(transaciton.showMovement());
+        if(MovementTypeEnum.EXPENSE.equals(type)){
+            List<Expense> movements = userAccount.filterExpenseByAmount(min, max);
+            printExpenses(movements);
+        } else if (MovementTypeEnum.INCOME.equals(type)){
+            List<Income> movements = userAccount.filterIncomeByAmount(min, max);
+            printIncome(movements);
         }
 
     }
 
-    public static void searchByCategory(Account userAccount, Scanner scanner){
+    public static void searchByCategory(Account userAccount, Scanner scanner, MovementTypeEnum type){
 
         System.out.println("Catgeory Name: ");
         String category = scanner.nextLine();
-        List<MoneyMovement> transacitons = userAccount.filterByCategory(category);
+        List<MoneyMovement> transacitons = userAccount.filterByCategory(category, type);
 
         for(MoneyMovement transaciton : transacitons){
             System.out.println(transaciton.showMovement());
@@ -201,13 +215,16 @@ public class ExpenseTracker {
         System.out.println("Main Menu: \n");
         System.out.println("A | Log Expense");
         System.out.println("B | Log Income");
-        System.out.println("C | Search by Category");
-        System.out.println("D | Search by Price Range");
-        System.out.println("E | Search by Date");
-        System.out.println("F | Show all Expenses");
-        System.out.println("G | Show all Income Transactions");
-        System.out.println("H | Show total balance");
-        System.out.println("I | EXIT");
+        System.out.println("C | Search Expense by Category");
+        System.out.println("D | Search Income by Category");
+        System.out.println("E | Search Expense by Price Range");
+        System.out.println("F | Search Income by Price Range");
+        System.out.println("G | Search Expense by Date");
+        System.out.println("H | Search Income by Date");
+        System.out.println("I | Show all Expenses");
+        System.out.println("J | Show all Income Transactions");
+        System.out.println("K | Show total balance");
+        System.out.println("L | EXIT");
     }
 
     private static Date convertToDateFormat(String dateString){
@@ -218,6 +235,18 @@ public class ExpenseTracker {
         } catch (Exception e){
             System.out.println("Incorrect date format");
             return null;
+        }
+    }
+
+    private static void printExpenses(List<Expense> expenses) {
+        for(Expense expense : expenses){
+            System.out.println(expense.showMovement());
+        }
+    }
+
+    private static void printIncome(List<Income> incomeList) {
+        for(Income income: incomeList){
+            System.out.println(income.showMovement());
         }
     }
 }

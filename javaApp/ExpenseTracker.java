@@ -69,7 +69,7 @@ public class ExpenseTracker {
                     break;
             }
 
-            if("I".equals(option)){
+            if("L".equals(option)){
                 break;
             }
 

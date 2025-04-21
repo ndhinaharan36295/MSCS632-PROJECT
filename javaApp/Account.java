@@ -98,7 +98,7 @@ public class Account {
     }
 
     public List<Expense> filterExpenseByAmount(double minAmount, double maxAmount){
-        return dateExpenseSearchTree.rangeSearch(dateExpenseSearchTree.initializeMinAmountExpense(minAmount), dateExpenseSearchTree.initializeMaxAmountExpense(maxAmount));
+        return amonutExpenseSearchTree.rangeSearch(amonutExpenseSearchTree.initializeMinAmountExpense(minAmount), amonutExpenseSearchTree.initializeMaxAmountExpense(maxAmount));
     }
 
     public List<Income> filterIncomeByDateRange(Date startDate, Date endDate){
